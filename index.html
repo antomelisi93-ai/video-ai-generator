@@ -7,45 +7,51 @@
         body { background: #050816; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .box { width: 500px; padding: 30px; background: #111827; border-radius: 20px; border: 1px solid #4f46e5; text-align: center; }
         .btn { background: #4f46e5; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 20px; }
+        .btn:disabled { background: #374151; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
 <div class="box">
     <h2>AI Studio (Gratuito)</h2>
-    <input type="file" id="fileInput">
-    <textarea id="promptText" style="width:100%; margin:15px 0;" placeholder="Descrivi il movimento in inglese..."></textarea>
+    <input type="file" id="fileInput" accept="image/*">
+    <textarea id="promptText" style="width:100%; margin:15px 0; border-radius:8px; padding:10px;" placeholder="Descrivi il movimento in inglese..."></textarea>
     <button class="btn" id="btnGenera">Genera Video Gratis</button>
-    <div id="status" style="margin-top:20px;"></div>
+    <div id="status" style="margin-top:20px; color: #00bfff; font-weight: bold;"></div>
 </div>
 
 <script>
 document.getElementById('btnGenera').addEventListener('click', async () => {
     const file = document.getElementById('fileInput').files[0];
     const prompt = document.getElementById('promptText').value;
+    const btn = document.getElementById('btnGenera');
     const status = document.getElementById('status');
 
     if (!file || !prompt) return alert("Carica immagine e scrivi prompt!");
 
-    status.innerText = "Inviando ai server gratuiti...";
+    btn.disabled = true;
+    status.innerText = "Inviando ai server gratuiti... Attendi.";
 
-    // Leggiamo l'immagine
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
     reader.onload = async () => {
         try {
-            // Usiamo il modello gratuito di Stability AI su Hugging Face
-            const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-video-diffusion-img2vid-xt", {
+            // Indirizzo API aggiornato alla versione stabile 1-1
+            const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-video-diffusion-img2vid-xt-1-1", {
                 method: "POST",
                 headers: { "Content-Type": "application/octet-stream" },
                 body: reader.result
             });
 
+            if (!response.ok) throw new Error("Server occupato o errore API");
+
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
-            status.innerHTML = `<a href="${url}" download="video.mp4">Scarica il tuo video qui!</a>`;
+            status.innerHTML = `<a href="${url}" download="video.mp4" style="color:white;">✅ Video pronto! Scarica qui</a>`;
         } catch (e) {
             status.innerText = "Errore: i server gratuiti sono carichi. Riprova tra poco!";
+        } finally {
+            btn.disabled = false;
         }
     };
 });
