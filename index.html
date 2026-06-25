@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>AI Video Cloud (Gratuito)</title>
+    <title>AI Video Cloud</title>
     <style>
         body { background: #050816; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .box { width: 500px; padding: 30px; background: #111827; border-radius: 20px; border: 1px solid #4f46e5; text-align: center; }
@@ -30,26 +30,27 @@ document.getElementById('btnGenera').addEventListener('click', async () => {
     if (!file || !prompt) return alert("Carica immagine e scrivi prompt!");
 
     btn.disabled = true;
-    status.innerText = "Inviando ai server gratuiti... Attendi.";
+    status.innerText = "Inviando ai server... Attendi.";
 
     const reader = new FileReader();
     reader.readAsArrayBuffer(file);
     reader.onload = async () => {
         try {
-            // Indirizzo API aggiornato alla versione stabile 1-1
+            // URL CORRETTO E CONTROLLATO
             const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-video-diffusion-img2vid-xt-1-1", {
                 method: "POST",
                 headers: { "Content-Type": "application/octet-stream" },
                 body: reader.result
             });
 
-            if (!response.ok) throw new Error("Server occupato o errore API");
+            if (!response.ok) throw new Error("Errore API");
 
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
             status.innerHTML = `<a href="${url}" download="video.mp4" style="color:white;">✅ Video pronto! Scarica qui</a>`;
         } catch (e) {
-            status.innerText = "Errore: i server gratuiti sono carichi. Riprova tra poco!";
+            status.innerText = "Errore: server occupato. Riprova tra poco.";
+            console.error(e);
         } finally {
             btn.disabled = false;
         }
